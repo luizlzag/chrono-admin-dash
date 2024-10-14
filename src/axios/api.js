@@ -209,3 +209,13 @@ export const createSale = async (newSale) => {
     throw error;
   }
 };
+
+export const getAllComissions = async () => {
+  try {
+    const response = await api.get('/commissions/1');
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar comissões:', error);
+    throw error;
+  }
+}
