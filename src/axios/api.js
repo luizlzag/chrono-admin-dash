@@ -167,6 +167,7 @@ export const createGym = async (newGym) => {
   }
 }
 
+
 export const createUser = async (newUser) => {
   try {
     const response = await api.post('/auth/register', {
@@ -180,4 +181,31 @@ export const createUser = async (newUser) => {
     console.error('Erro ao criar novo usuário:', error);
     throw error;
   }
-}
+};
+
+export const getAllSales = async () => {
+  try {
+    const response = await api.get('/sales');
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar vendas:', error);
+    throw error;
+  }
+};
+
+export const createSale = async (newSale) => {
+  try {
+    const response = await api.post('/sales/create', {
+      userId: newSale.userId,
+      gymId: newSale.gymId,
+      productId: newSale.productId,
+      quantity: newSale.quantity,
+      total: newSale.total,
+      paymentType: newSale.paymentType // Inclui o tipo de pagamento na requisição
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao criar nova venda:', error);
+    throw error;
+  }
+};

@@ -15,6 +15,10 @@ function HeaderChrono() {
                 <Link href="/pages/Gym">
                     <p className="hover:text-gray-300">Academia</p>
                 </Link>
+
+                <Link href="/pages/Sell">
+                    <p className="hover:text-gray-300">Vendas</p>
+                </Link>
             </div>
         </div>
     );
