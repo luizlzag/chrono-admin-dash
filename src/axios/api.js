@@ -91,14 +91,23 @@ export const getProductStockInGym = async (productId, gymId) => {
   }
 };
 
+
 // Função para atualizar o estoque de um produto
-// Função para atualizar o estoque de um produto
-export const updateProductStock = async (productId, gymId, newStock) => {
+
+export const updateProductStock = async (productId, newStock) => {
   try {
-    // Converte `newStock` para número inteiro
+    // Recupera o objeto user do localStorage e faz o parse para JSON
+    const user = JSON.parse(localStorage.getItem('user'));
+
+    // Verifica se user e gymId estão disponíveis
+    if (!user || !user.gymId) {
+      throw new Error('gymId não encontrado no localStorage.');
+    }
+
+    // Converte newStock para inteiro e faz a requisição
     const response = await api.put('/stock/update', {
       productId,
-      gymId,
+      gymId: parseInt(user.gymId, 10), // Usa o gymId do objeto user
       newStock: parseInt(newStock, 10) // Garante que o estoque seja enviado como inteiro
     });
     return response.data;
@@ -107,6 +116,7 @@ export const updateProductStock = async (productId, gymId, newStock) => {
     throw error;
   }
 };
+
 
 
 // Função para transferir estoque de uma academia para outra
