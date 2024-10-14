@@ -55,6 +55,7 @@ export const addProduct = async (newProduct) => {
     const response = await api.post('/products/create', {
       name: newProduct.name,
       price: parseFloat(newProduct.price), // Garante que o preço seja um float
+      costPrice: parseFloat(newProduct.costPrice), // Garante que o custo seja um float
       imageUrl: newProduct.imageUrl
     });
     
@@ -72,7 +73,7 @@ export const addProduct = async (newProduct) => {
 export const updateProduct = async (id, updatedData) => {
   try {
     const response = await api.put(`/products/${id}`, updatedData);
-    return response.data; // Supondo que a API retorne o produto atualizado no data
+    return response.data;
   } catch (error) {
     console.error(`Erro ao atualizar o produto com ID ${id}:`, error);
     throw error;
@@ -123,3 +124,60 @@ export const transferProductStock = async (productId, fromGymId, toGymId, quanti
     throw error;
   }
 };
+
+
+// Funçao que retorna todos os estoques de todas as academias
+export const getAllStock = async () => {
+  try {
+    const response = await api.get('/stock/all');
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar estoque:', error);
+    throw error;
+  }
+};
+
+export const getAllGysm = async () => {
+  try {
+    const response = await api.get('/gyms');
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar estoque:', error);
+    throw error;
+  }
+};
+
+export const createGym = async (newGym) => {
+  try {
+    const response = await api.post('/gyms/create', {
+      name: newGym.name,
+      street: newGym.street,
+      number: newGym.number,
+      complement: newGym.complement,
+      neighborhood: newGym.neighborhood,
+      city: newGym.city,
+      state: newGym.state,
+      zipCode: newGym.zipCode,
+      country: newGym.country
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao criar nova academia:', error);
+    throw error;
+  }
+}
+
+export const createUser = async (newUser) => {
+  try {
+    const response = await api.post('/auth/register', {
+      name: newUser.name,
+      email: newUser.email,
+      password: newUser.password,
+      gymId: newUser.gymId
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao criar novo usuário:', error);
+    throw error;
+  }
+}

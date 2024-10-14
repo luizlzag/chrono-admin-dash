@@ -17,7 +17,7 @@ const Login = () => {
 
     try {
       const token = await login(email, password);
-      router.push('/pages/Cadastro'); // Redirecionar para a página de cadastro após login
+      router.push('/pages/Home'); // Redirecionar para a página de cadastro após login
     } catch (error) {
       setError('Login falhou. Verifique suas credenciais.');
       setLoading(false);
