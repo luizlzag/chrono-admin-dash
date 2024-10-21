@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 function HeaderChrono() {
     return (  
-        <div className="fixed top-0 left-0 right-0 w-full bg-black">  
+        <div className="fixed top-0 left-0 right-0 w-full bg-black z-10">  
             <div className="flex items-center gap-5 text-white my-3 mx-3 cursor-pointer">
                
                 <Link href="/pages/Home">

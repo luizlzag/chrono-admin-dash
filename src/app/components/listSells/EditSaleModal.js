@@ -1,97 +1,98 @@
+"use client";
 import React, { useState, useEffect } from 'react';
-import { createSale, getAllGysm, getProducts } from '../../../axios/api';
+import { updateSales, getAllGysm, getProducts } from '../../../axios/api'; // Ajuste as importações
 
-function AddSaleModal({ onClose, onSaleAdded }) {
+function EditSaleModal({ sale, onClose, onSaleUpdated }) {
     const [gyms, setGyms] = useState([]);
-    const [products, setProducts] = useState([]);
     const [users, setUsers] = useState([]);
+    const [products, setProducts] = useState([]);
     const [formData, setFormData] = useState({
-        userId: '',
-        gymId: '',
-        productId: '',
-        quantity: 1,
-        total: 0,
-        paymentType: '' // Adiciona o campo paymentType ao formData
+        userId: sale.userId,
+        gymId: sale.gymId,
+        productId: sale.productId,
+        quantity: sale.quantity,
+        total: sale.total,
+        paymentType: sale.paymentType,
     });
 
     useEffect(() => {
-        const fetchGyms = async () => {
+        // Carrega academias e produtos
+        const fetchGymsAndProducts = async () => {
             try {
                 const gymData = await getAllGysm();
                 setGyms(gymData.gyms);
-            } catch (error) {
-                console.error('Erro ao buscar academias:', error);
-            }
-        };
 
-        const fetchProducts = async () => {
-            try {
                 const productData = await getProducts();
                 setProducts(productData.products);
+
+                // Define usuários da academia selecionada
+                const selectedGym = gymData.gyms.find(gym => gym.id === sale.gymId);
+                if (selectedGym) setUsers(selectedGym.users);
             } catch (error) {
-                console.error('Erro ao buscar produtos:', error);
+                console.error('Erro ao buscar dados:', error);
             }
         };
+        fetchGymsAndProducts();
+    }, [sale.gymId]);
 
-        fetchGyms();
-        fetchProducts();
-    }, []);
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+    };
 
     const handleGymChange = (e) => {
-        const gymId = e.target.value;
+        const gymId = parseInt(e.target.value, 10);
         setFormData({ ...formData, gymId });
 
-        const selectedGym = gyms.find(gym => gym.id === parseInt(gymId));
-        if (selectedGym) {
-            setUsers(selectedGym.users);
-        }
+        const selectedGym = gyms.find(gym => gym.id === gymId);
+        if (selectedGym) setUsers(selectedGym.users);
     };
 
     const handleProductChange = (e) => {
-        const productId = e.target.value;
-        setFormData({ ...formData, productId });
+        const productId = parseInt(e.target.value, 10);
+        const selectedProduct = products.find(product => product.id === productId);
 
-        const selectedProduct = products.find(product => product.id === parseInt(productId));
-        if (selectedProduct) {
-            setFormData((prevData) => ({
-                ...prevData,
-                productId,
-                total: selectedProduct.price * prevData.quantity
-            }));
-        }
+        setFormData(prevData => ({
+            ...prevData,
+            productId,
+            total: selectedProduct ? selectedProduct.price * prevData.quantity : prevData.total,
+        }));
     };
 
     const handleQuantityChange = (e) => {
-        const quantity = parseInt(e.target.value);
-        const selectedProduct = products.find(product => product.id === parseInt(formData.productId));
-        setFormData((prevData) => ({
+        const quantity = parseInt(e.target.value, 10);
+        const selectedProduct = products.find(product => product.id === formData.productId);
+
+        setFormData(prevData => ({
             ...prevData,
             quantity,
-            total: selectedProduct ? selectedProduct.price * quantity : 0
+            total: selectedProduct ? selectedProduct.price * quantity : prevData.total,
         }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        if (!formData.paymentType) {
-            alert('Por favor, selecione um tipo de pagamento.');
-            return;
-        }
-    
         try {
-            await createSale(formData);
-            onSaleAdded();
-            onClose();
+            const updatedData = {
+                userId: parseInt(formData.userId, 10),
+                gymId: parseInt(formData.gymId, 10),
+                productId: parseInt(formData.productId, 10),
+                quantity: parseInt(formData.quantity, 10),
+                total: parseFloat(formData.total),
+                paymentType: formData.paymentType,
+            };
+            await updateSales(sale.id, updatedData);
+            onSaleUpdated(); // Atualiza a lista de vendas
+            onClose(); // Fecha o modal
         } catch (error) {
-            console.error('Erro ao criar nova venda:', error);
+            console.error('Erro ao atualizar venda:', error);
         }
     };
 
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-20">
             <div className="bg-white p-6 rounded-lg w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-4">Criar Nova Venda</h2>
+                <h2 className="text-2xl font-bold mb-4">Editar Venda</h2>
                 <form onSubmit={handleSubmit}>
                     {/* Campo para selecionar academia */}
                     <div className="mb-4">
@@ -111,13 +112,14 @@ function AddSaleModal({ onClose, onSaleAdded }) {
                             ))}
                         </select>
                     </div>
-                    {/* Campo para selecionar vendedor */}
+
+                    {/* Campo para selecionar usuário (vendedor) */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700">Vendedor</label>
                         <select 
                             name="userId" 
                             value={formData.userId} 
-                            onChange={(e) => setFormData({ ...formData, userId: e.target.value })} 
+                            onChange={handleChange} 
                             className="mt-1 p-2 border border-gray-300 rounded w-full" 
                             required
                         >
@@ -129,6 +131,7 @@ function AddSaleModal({ onClose, onSaleAdded }) {
                             ))}
                         </select>
                     </div>
+
                     {/* Campo para selecionar produto */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700">Produto</label>
@@ -142,11 +145,12 @@ function AddSaleModal({ onClose, onSaleAdded }) {
                             <option value="">Selecione um produto</option>
                             {products.map(product => (
                                 <option key={product.id} value={product.id}>
-                                    {product.name} (R$ {product.price})
+                                    {product.name} - R$ {product.price.toFixed(2)}
                                 </option>
                             ))}
                         </select>
                     </div>
+
                     {/* Campo para quantidade */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700">Quantidade</label>
@@ -157,10 +161,28 @@ function AddSaleModal({ onClose, onSaleAdded }) {
                             onChange={handleQuantityChange} 
                             className="mt-1 p-2 border border-gray-300 rounded w-full" 
                             required 
-                            min="1" 
+                            min="1"
                         />
                     </div>
-                    {/* Campo para total */}
+
+                    {/* Campo para tipo de pagamento */}
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">Tipo de Pagamento</label>
+                        <select 
+                            name="paymentType" 
+                            value={formData.paymentType} 
+                            onChange={handleChange} 
+                            className="mt-1 p-2 border border-gray-300 rounded w-full" 
+                            required
+                        >
+                            <option value="CASH">Dinheiro</option>
+                            <option value="CREDIT_CARD">Cartão de Crédito</option>
+                            <option value="DEBIT_CARD">Cartão de Débito</option>
+                            <option value="PIX">PIX</option>
+                        </select>
+                    </div>
+
+                    {/* Campo para o total (somente leitura) */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700">Total</label>
                         <input 
@@ -170,24 +192,7 @@ function AddSaleModal({ onClose, onSaleAdded }) {
                             readOnly 
                         />
                     </div>
-                   {/* Campo para selecionar tipo de pagamento */}
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700">Tipo de Pagamento</label>
-                        <select 
-                            name="paymentType" 
-                            value={formData.paymentType} 
-                            onChange={(e) => setFormData({ ...formData, paymentType: e.target.value })} 
-                            className="mt-1 p-2 border border-gray-300 rounded w-full" 
-                            required
-                        >
-                            <option value="">Selecione o tipo de pagamento</option>
-                            <option value="CASH">Dinheiro</option>
-                            <option value="CREDIT_CARD">Cartão de Crédito</option>
-                            <option value="DEBIT_CARD">Cartão de Débito</option>
-                            <option value="PIX">PIX</option>
-                        </select>
-                    </div>
-                    {/* Botões para cancelar e criar venda */}
+
                     <div className="flex justify-end gap-2">
                         <button 
                             type="button" 
@@ -198,7 +203,7 @@ function AddSaleModal({ onClose, onSaleAdded }) {
                         <button 
                             type="submit" 
                             className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
-                            Criar Venda
+                            Salvar Alterações
                         </button>
                     </div>
                 </form>
@@ -207,4 +212,4 @@ function AddSaleModal({ onClose, onSaleAdded }) {
     );
 }
 
-export default AddSaleModal;
+export default EditSaleModal;

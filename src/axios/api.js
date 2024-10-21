@@ -229,3 +229,15 @@ export const getAllComissions = async () => {
     throw error;
   }
 }
+
+
+// Função para atualizar uma venda existente
+export const updateSales = async (saleId, updatedData) => {
+  try {
+    const response = await api.put(`/sales/${saleId}`, updatedData);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao editar venda:', error);
+    throw error; // Lança o erro para ser tratado no componente
+  }
+};
