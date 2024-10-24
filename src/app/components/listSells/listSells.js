@@ -2,11 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { getAllSales } from '../../../axios/api';
+import { getAllSales, deleteSale } from '../../../axios/api'; // Importar a função de exclusão
 import HeaderChrono from '../header/header';
 import AddSaleModal from './AddSaleModal';
 import EditSaleModal from './EditSaleModal';
+import ConfirmDeleteModal from './ConfirmDeleteModal'; // Importar o modal de confirmação
 import { CiEdit } from "react-icons/ci";
+import { MdDelete } from "react-icons/md";
 
 function ListSells() {
     const [sales, setSales] = useState([]);
@@ -15,6 +17,8 @@ function ListSells() {
     const [filterCriteria, setFilterCriteria] = useState({ startDate: null, endDate: null, gym: '', product: '' });
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedSale, setSelectedSale] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [saleToDelete, setSaleToDelete] = useState(null);
 
     const fetchSales = async () => {
         try {
@@ -64,6 +68,26 @@ function ListSells() {
         setSelectedSale(null);
     };
 
+    const handleDeleteModalOpen = (sale) => {
+        setSaleToDelete(sale);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDeleteModalClose = () => {
+        setIsDeleteModalOpen(false);
+        setSaleToDelete(null);
+    };
+
+    const handleDeleteConfirm = async (saleId) => {
+        try {
+            await deleteSale(saleId);
+            fetchSales(); // Atualiza a lista após a exclusão
+            handleDeleteModalClose();
+        } catch (error) {
+            console.error('Erro ao deletar venda:', error);
+        }
+    };
+
     const setPeriodFilter = (period) => {
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -99,6 +123,7 @@ function ListSells() {
                     className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg mb-4 transition-colors duration-200">
                     Criar Nova Venda
                 </button>
+                {/* Filtros */}
                 <div className="flex gap-4 mb-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Data Inicial</label>
@@ -138,7 +163,6 @@ function ListSells() {
                             <option value="lastMonth">Mês Passado</option>
                         </select>
                     </div>
-                    <div className="flex gap-4 mb-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Produto</label>
                         <select 
@@ -164,8 +188,7 @@ function ListSells() {
                         </select>
                     </div>
                 </div>
-                </div>
-               
+                {/* Tabela de Vendas */}
                 <div className="overflow-x-auto">
                     <table className="min-w-full bg-white border border-gray-200">
                         <thead>
@@ -211,12 +234,18 @@ function ListSells() {
                                             className="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-2 rounded">
                                             <CiEdit />
                                         </button>
+                                        <button 
+                                            onClick={() => handleDeleteModalOpen(sale)} 
+                                            className="bg-red-500 hover:bg-red-600 text-white py-1 px-2 ml-2 rounded">
+                                            <MdDelete />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
+                {/* Subtotal */}
                 <div className="mt-4">
                     <p className="text-lg font-bold">Subtotal</p>
                     <p>Total Quantidade: {subtotalQuantity}</p>
@@ -225,6 +254,7 @@ function ListSells() {
             </div>
             {isModalOpen && <AddSaleModal onClose={handleModalToggle} onSaleAdded={fetchSales} />}
             {isEditModalOpen && <EditSaleModal sale={selectedSale} onClose={handleEditModalClose} onSaleUpdated={fetchSales} />}
+            {isDeleteModalOpen && <ConfirmDeleteModal sale={saleToDelete} onClose={handleDeleteModalClose} onConfirm={handleDeleteConfirm} />}
         </div>
     );
 }

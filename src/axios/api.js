@@ -241,3 +241,15 @@ export const updateSales = async (saleId, updatedData) => {
     throw error; // Lança o erro para ser tratado no componente
   }
 };
+
+
+// Função para deletar uma venda existente
+export const deleteSale = async (saleId) => {
+  try {
+    const response = await api.delete(`/sales/${saleId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao deletar venda:', error);
+    throw error; // Lança o erro para ser tratado no componente
+  }
+};
