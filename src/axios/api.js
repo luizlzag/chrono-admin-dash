@@ -89,7 +89,8 @@ export const getProductStockInGym = async (productId, gymId) => {
     console.error(`Erro ao buscar estoque para produto ID ${productId} e academia ID ${gymId}:`, error);
     throw error;
   }
-};
+}; 
+
 
 
 // Função para atualizar o estoque de um produto

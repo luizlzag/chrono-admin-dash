@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { createSale, getAllGysm, getProducts } from '../../../axios/api';
+import { createSale, getAllGysm, getProducts, getProductStockInGym } from '../../../axios/api';
 
 function AddSaleModal({ onClose, onSaleAdded }) {
     const [gyms, setGyms] = useState([]);
     const [products, setProducts] = useState([]);
     const [users, setUsers] = useState([]);
+    const [stockAvailable, setStockAvailable] = useState(null); // Estado para o estoque disponível
+    const [isSubmitting, setIsSubmitting] = useState(false); // Estado para controlar o envio
     const [formData, setFormData] = useState({
         userId: '',
         gymId: '',
         productId: '',
         quantity: 1,
         total: 0,
-        paymentType: '' // Adiciona o campo paymentType ao formData
+        paymentType: ''
     });
 
     useEffect(() => {
@@ -37,9 +39,35 @@ function AddSaleModal({ onClose, onSaleAdded }) {
         fetchProducts();
     }, []);
 
+    useEffect(() => {
+        const fetchStock = async () => {
+            if (formData.productId && formData.gymId) {
+                try {
+                    const stockData = await getProductStockInGym(formData.productId, formData.gymId);
+                    setStockAvailable(stockData.stock);
+                } catch (error) {
+                    console.error('Erro ao buscar estoque:', error);
+                    if (error.response && error.response.status === 404) {
+                        // Se for erro 404, significa que não há estoque para este produto na academia
+                        setStockAvailable(0);
+                    } else {
+                        // Outros erros (por exemplo, erro de rede)
+                        setStockAvailable(null);
+                    }
+                }
+            } else {
+                setStockAvailable(null);
+            }
+        };
+
+        fetchStock();
+    }, [formData.productId, formData.gymId]);
+
     const handleGymChange = (e) => {
         const gymId = e.target.value;
-        setFormData({ ...formData, gymId });
+        setFormData({ ...formData, gymId, userId: '', productId: '', quantity: 1, total: 0 });
+        setUsers([]);
+        setStockAvailable(null);
 
         const selectedGym = gyms.find(gym => gym.id === parseInt(gymId));
         if (selectedGym) {
@@ -49,20 +77,26 @@ function AddSaleModal({ onClose, onSaleAdded }) {
 
     const handleProductChange = (e) => {
         const productId = e.target.value;
-        setFormData({ ...formData, productId });
+        setFormData({ ...formData, productId, quantity: 1, total: 0 });
+        setStockAvailable(null);
 
         const selectedProduct = products.find(product => product.id === parseInt(productId));
         if (selectedProduct) {
             setFormData((prevData) => ({
                 ...prevData,
-                productId,
                 total: selectedProduct.price * prevData.quantity
             }));
         }
     };
 
     const handleQuantityChange = (e) => {
-        const quantity = parseInt(e.target.value);
+        let quantity = parseInt(e.target.value);
+
+        if (stockAvailable !== null && quantity > stockAvailable) {
+            alert(`A quantidade solicitada excede o estoque disponível (${stockAvailable}).`);
+            quantity = stockAvailable;
+        }
+
         const selectedProduct = products.find(product => product.id === parseInt(formData.productId));
         setFormData((prevData) => ({
             ...prevData,
@@ -73,18 +107,27 @@ function AddSaleModal({ onClose, onSaleAdded }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         if (!formData.paymentType) {
             alert('Por favor, selecione um tipo de pagamento.');
             return;
         }
-    
+
+        if (stockAvailable !== null && formData.quantity > stockAvailable) {
+            alert(`A quantidade solicitada excede o estoque disponível (${stockAvailable}).`);
+            return;
+        }
+
+        setIsSubmitting(true);
+
         try {
             await createSale(formData);
             onSaleAdded();
             onClose();
         } catch (error) {
             console.error('Erro ao criar nova venda:', error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -96,11 +139,11 @@ function AddSaleModal({ onClose, onSaleAdded }) {
                     {/* Campo para selecionar academia */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700">Academia</label>
-                        <select 
-                            name="gymId" 
-                            value={formData.gymId} 
-                            onChange={handleGymChange} 
-                            className="mt-1 p-2 border border-gray-300 rounded w-full" 
+                        <select
+                            name="gymId"
+                            value={formData.gymId}
+                            onChange={handleGymChange}
+                            className="mt-1 p-2 border border-gray-300 rounded w-full"
                             required
                         >
                             <option value="">Selecione uma academia</option>
@@ -114,11 +157,11 @@ function AddSaleModal({ onClose, onSaleAdded }) {
                     {/* Campo para selecionar vendedor */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700">Vendedor</label>
-                        <select 
-                            name="userId" 
-                            value={formData.userId} 
-                            onChange={(e) => setFormData({ ...formData, userId: e.target.value })} 
-                            className="mt-1 p-2 border border-gray-300 rounded w-full" 
+                        <select
+                            name="userId"
+                            value={formData.userId}
+                            onChange={(e) => setFormData({ ...formData, userId: e.target.value })}
+                            className="mt-1 p-2 border border-gray-300 rounded w-full"
                             required
                         >
                             <option value="">Selecione um vendedor</option>
@@ -132,11 +175,11 @@ function AddSaleModal({ onClose, onSaleAdded }) {
                     {/* Campo para selecionar produto */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700">Produto</label>
-                        <select 
-                            name="productId" 
-                            value={formData.productId} 
-                            onChange={handleProductChange} 
-                            className="mt-1 p-2 border border-gray-300 rounded w-full" 
+                        <select
+                            name="productId"
+                            value={formData.productId}
+                            onChange={handleProductChange}
+                            className="mt-1 p-2 border border-gray-300 rounded w-full"
                             required
                         >
                             <option value="">Selecione um produto</option>
@@ -147,38 +190,53 @@ function AddSaleModal({ onClose, onSaleAdded }) {
                             ))}
                         </select>
                     </div>
+                    {/* Exibir estoque disponível */}
+                    {stockAvailable !== null && (
+                        <div className="mb-4">
+                            <span className="text-sm text-gray-600">Estoque disponível: {stockAvailable}</span>
+                        </div>
+                    )}
+                    {/* Mensagem de produto esgotado */}
+                    {stockAvailable === 0 && (
+                        <div className="mb-4 text-red-500">
+                            Este produto não possui estoque nesta academia.
+                        </div>
+                    )}
                     {/* Campo para quantidade */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700">Quantidade</label>
-                        <input 
-                            type="number" 
-                            name="quantity" 
-                            value={formData.quantity} 
-                            onChange={handleQuantityChange} 
-                            className="mt-1 p-2 border border-gray-300 rounded w-full" 
-                            required 
-                            min="1" 
+                        <input
+                            type="number"
+                            name="quantity"
+                            value={formData.quantity}
+                            onChange={handleQuantityChange}
+                            className="mt-1 p-2 border border-gray-300 rounded w-full"
+                            required
+                            min="1"
+                            max={stockAvailable !== null ? stockAvailable : undefined}
+                            disabled={stockAvailable === 0 || stockAvailable === null}
                         />
                     </div>
                     {/* Campo para total */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700">Total</label>
-                        <input 
-                            type="text" 
-                            value={`R$ ${formData.total.toFixed(2)}`} 
-                            className="mt-1 p-2 border border-gray-300 rounded w-full bg-gray-100" 
-                            readOnly 
+                        <input
+                            type="text"
+                            value={`R$ ${formData.total.toFixed(2)}`}
+                            className="mt-1 p-2 border border-gray-300 rounded w-full bg-gray-100"
+                            readOnly
                         />
                     </div>
-                   {/* Campo para selecionar tipo de pagamento */}
+                    {/* Campo para selecionar tipo de pagamento */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700">Tipo de Pagamento</label>
-                        <select 
-                            name="paymentType" 
-                            value={formData.paymentType} 
-                            onChange={(e) => setFormData({ ...formData, paymentType: e.target.value })} 
-                            className="mt-1 p-2 border border-gray-300 rounded w-full" 
+                        <select
+                            name="paymentType"
+                            value={formData.paymentType}
+                            onChange={(e) => setFormData({ ...formData, paymentType: e.target.value })}
+                            className="mt-1 p-2 border border-gray-300 rounded w-full"
                             required
+                            disabled={stockAvailable === 0 || stockAvailable === null}
                         >
                             <option value="">Selecione o tipo de pagamento</option>
                             <option value="CASH">Dinheiro</option>
@@ -189,16 +247,21 @@ function AddSaleModal({ onClose, onSaleAdded }) {
                     </div>
                     {/* Botões para cancelar e criar venda */}
                     <div className="flex justify-end gap-2">
-                        <button 
-                            type="button" 
-                            onClick={onClose} 
-                            className="bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 px-4 rounded"
+                        >
                             Cancelar
                         </button>
-                        <button 
-                            type="submit" 
-                            className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
-                            Criar Venda
+                        <button
+                            type="submit"
+                            className={`bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded ${
+                                isSubmitting || stockAvailable === 0 || stockAvailable === null ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                            disabled={isSubmitting || stockAvailable === 0 || stockAvailable === null}
+                        >
+                            {isSubmitting ? 'Processando...' : 'Criar Venda'}
                         </button>
                     </div>
                 </form>
