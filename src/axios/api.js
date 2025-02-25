@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Criação da instância Axios com a URL base
 const api = axios.create({
-  baseURL: 'https://muay-thai-sales-api.vercel.app'
+  baseURL: 'https://new-muay-thai-sales-api.vercel.app'
 });
 
 // Intercepta as requisições e adiciona o token de autenticação
@@ -22,7 +22,7 @@ api.interceptors.request.use(
 // Função de login que armazena o token no localStorage
 export const login = async (email, password) => {
   try {
-    const response = await axios.post('https://muay-thai-sales-api.vercel.app/auth/login', {
+    const response = await axios.post('/auth/login', {
       email,
       password
     });
@@ -254,3 +254,23 @@ export const deleteSale = async (saleId) => {
     throw error; // Lança o erro para ser tratado no componente
   }
 };
+
+export const getTransactionsAdmin = async () => {
+  try {
+    const response = await api.get('/transaction/admin');
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar transações:', error);
+    throw error;
+  }
+}
+
+export const updateTransaction = async (transactionId, updatedData) => {
+  try {
+    const response = await api.put(`/transaction/${transactionId}`, updatedData);
+    return response.data;
+  } catch (error) {
+    console.error(`Erro ao atualizar a transação com ID ${transactionId}:`, error);
+    throw error;
+  }
+}
