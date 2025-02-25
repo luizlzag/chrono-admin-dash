@@ -22,7 +22,7 @@ api.interceptors.request.use(
 // Função de login que armazena o token no localStorage
 export const login = async (email, password) => {
   try {
-    const response = await axios.post('/auth/login', {
+    const response = await api.post('/auth/login', {
       email,
       password
     });
