@@ -48,6 +48,7 @@ function TransactionFilters({ filters, setFilters, transactions }) {
                     <option value="waiting_payment">Aguardando Pagamento</option>
                     <option value="paid">Pago</option>
                     <option value="canceled">Cancelado</option>
+                    <option value="comission_paid">Comissão Paga</option>
                 </select>
             </div>
             <div>
