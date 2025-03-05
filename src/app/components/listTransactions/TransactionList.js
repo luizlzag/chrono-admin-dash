@@ -10,6 +10,8 @@ function TransactionList() {
     const [filteredTransactions, setFilteredTransactions] = useState([]);
     const [filters, setFilters] = useState({ startDate: null, endDate: null, gym: "", status: "", paymentMethod: "" });
     const [expandedTransactionId, setExpandedTransactionId] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(10);
 
     useEffect(() => {
         fetchTransactions();
@@ -42,7 +44,10 @@ function TransactionList() {
             );
         });
         setFilteredTransactions(filtered);
+        setCurrentPage(1);
     };
+
+    const paginatedTransactions = filteredTransactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
         <div>
@@ -51,11 +56,22 @@ function TransactionList() {
                 <h1 className="text-2xl font-bold mb-4">Lista de Transações</h1>
                 <TransactionFilters filters={filters} setFilters={setFilters} transactions={transactions} />
                 <TransactionTable 
-                    transactions={filteredTransactions} 
+                    transactions={paginatedTransactions} 
                     expandedTransactionId={expandedTransactionId} 
                     setExpandedTransactionId={setExpandedTransactionId} 
                     fetchTransactions={fetchTransactions}
                 />
+                <div className="flex justify-center mt-4">
+                    {Array.from({ length: Math.ceil(filteredTransactions.length / itemsPerPage) }, (_, index) => (
+                        <button 
+                            key={index} 
+                            className={`mx-1 px-3 py-1 border rounded ${currentPage === index + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+                            onClick={() => setCurrentPage(index + 1)}
+                        >
+                            {index + 1}
+                        </button>
+                    ))}
+                </div>
             </div>
         </div>
     );

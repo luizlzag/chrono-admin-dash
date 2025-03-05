@@ -274,3 +274,15 @@ export const updateTransaction = async (transactionId, updatedData) => {
     throw error;
   }
 }
+
+export const payTransaction = async (transactionId, gymId) => {
+  try {
+    const response = await api.post(`/transaction/pay/${transactionId}`, {
+      gymId
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erro ao pagar a transação com ID ${transactionId}:`, error);
+    throw error;
+  }
+}

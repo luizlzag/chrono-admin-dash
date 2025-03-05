@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import statusDictionary from "./statusDictionary";
 import paymentMethodDictionary from "./paymentMethodsDictionary";
-import { updateTransaction } from "@/axios/api";
+import { updateTransaction, payTransaction } from "@/axios/api";
 
 function TransactionRow({ transaction, expanded, setExpandedTransactionId, fetchTransactions  }) {
     const toggleExpand = () => {
@@ -18,6 +18,15 @@ function TransactionRow({ transaction, expanded, setExpandedTransactionId, fetch
         }
     };
 
+    const handlePayTransaction = async (id, gymId) => {
+        try {
+            await payTransaction(id, gymId);
+            fetchTransactions();
+        } catch (error) {
+            alert("Erro ao pagar a transação!" + error);
+        }
+    }
+
     return (
         <>
             <tr className="hover:bg-gray-100 transition-colors cursor-pointer" onClick={toggleExpand}>
@@ -29,18 +38,18 @@ function TransactionRow({ transaction, expanded, setExpandedTransactionId, fetch
                 <td className="py-2 px-4 border-b">
                     {transaction.status === "waiting_payment" && (
                         <button 
-                            onClick={() => handleUpdateStatus("paid")}
+                            onClick={() => handlePayTransaction(transaction.id, transaction.gym.id)}
                             className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
                         >
-                            Recebido
+                            Confirmar pagamento
                         </button>
                     )}
                     {transaction.status === "paid" && (
                         <button 
-                            onClick={() => handleUpdateStatus("paid")} // Mudar para o novo status
+                            onClick={() => handleUpdateStatus("comission_paid")}
                             className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
                         >
-                            Comissão paga
+                            Pagar comissão
                         </button>
                     )}
                 </td>
