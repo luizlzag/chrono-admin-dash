@@ -257,7 +257,7 @@ export const deleteSale = async (saleId) => {
 
 export const getTransactionsAdmin = async () => {
   try {
-    const response = await api.get('/transaction/admin');
+    const response = await api.get('/admin/transactions');
     return response.data;
   } catch (error) {
     console.error('Erro ao buscar transações:', error);
@@ -277,7 +277,7 @@ export const updateTransaction = async (transactionId, updatedData) => {
 
 export const payTransaction = async (transactionId, gymId) => {
   try {
-    const response = await api.post(`/transaction/pay/${transactionId}`, {
+    const response = await api.post(`/admin/transaction/pay/${transactionId}`, {
       gymId
     });
     return response.data;
