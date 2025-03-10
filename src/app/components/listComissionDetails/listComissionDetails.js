@@ -35,10 +35,6 @@ function ListComissionsDetails() {
         fetchSales(filterCriteria);
     }, [filterCriteria, fetchSales]);
 
-    const handleModalToggle = () => {
-        setIsModalOpen(!isModalOpen);
-    };
-
     const handleFilterChange = (key, value) => {
         setFilterCriteria(prev => ({ ...prev, [key]: value }));
     };
