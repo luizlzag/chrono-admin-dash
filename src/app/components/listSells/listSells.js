@@ -1,91 +1,47 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { getAllSales, deleteSale } from '../../../axios/api'; // Importar a função de exclusão
+import { getGroupedAdminTransactions } from '../../../axios/api';
 import HeaderChrono from '../header/header';
 import AddSaleModal from './AddSaleModal';
-import EditSaleModal from './EditSaleModal';
-import ConfirmDeleteModal from './ConfirmDeleteModal'; // Importar o modal de confirmação
-import { CiEdit } from "react-icons/ci";
-import { MdDelete } from "react-icons/md";
+import Image from 'next/image';
 
 function ListSells() {
-    const [sales, setSales] = useState([]);
+    const [data, setData] = useState({ totalValue: 0, products: [], gyms: [], totalQuantity: 0, totalComission: 0 });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [filteredSales, setFilteredSales] = useState([]);
     const [filterCriteria, setFilterCriteria] = useState({ startDate: null, endDate: null, gym: '', product: '' });
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [selectedSale, setSelectedSale] = useState(null);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [saleToDelete, setSaleToDelete] = useState(null);
 
-    const fetchSales = async () => {
+    const fetchSales = useCallback(async () => {
         try {
-            const data = await getAllSales();
-            setSales(data.sales);
-            setFilteredSales(data.sales);
+            const data = await getGroupedAdminTransactions(filterCriteria);
+            if (!data) {
+                setFilteredSales([]);
+                setData({ totalValue: 0, products: [], gyms: [], totalQuantity: 0, totalComission: 0 });
+                return;
+            }
+            setFilteredSales(data.data);
+            setData(data);
         } catch (error) {
             console.error('Erro ao buscar vendas:', error);
         }
-    };
+    }, [filterCriteria]);
 
     useEffect(() => {
         fetchSales();
-    }, []);
+    }, [fetchSales]);
 
     useEffect(() => {
-        filterSales();
-    }, [filterCriteria]);
+        fetchSales(filterCriteria);
+    }, [filterCriteria, fetchSales]);
 
     const handleModalToggle = () => {
         setIsModalOpen(!isModalOpen);
     };
 
-    const filterSales = () => {
-        const { startDate, endDate, gym, product } = filterCriteria;
-        const filtered = sales.filter(sale => {
-            const saleDate = new Date(sale.date);
-            return ((!startDate || saleDate >= startDate) &&
-                    (!endDate || saleDate <= new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23, 59, 59)) &&
-                    (!gym || sale.gym.name === gym) &&
-                    (!product || sale.product.name === product));
-        });
-        setFilteredSales(filtered);
-    };
-
     const handleFilterChange = (key, value) => {
         setFilterCriteria(prev => ({ ...prev, [key]: value }));
-    };
-
-    const handleEditModalOpen = (sale) => {
-        setSelectedSale(sale);
-        setIsEditModalOpen(true);
-    };
-
-    const handleEditModalClose = () => {
-        setIsEditModalOpen(false);
-        setSelectedSale(null);
-    };
-
-    const handleDeleteModalOpen = (sale) => {
-        setSaleToDelete(sale);
-        setIsDeleteModalOpen(true);
-    };
-
-    const handleDeleteModalClose = () => {
-        setIsDeleteModalOpen(false);
-        setSaleToDelete(null);
-    };
-
-    const handleDeleteConfirm = async (saleId) => {
-        try {
-            await deleteSale(saleId);
-            fetchSales(); // Atualiza a lista após a exclusão
-            handleDeleteModalClose();
-        } catch (error) {
-            console.error('Erro ao deletar venda:', error);
-        }
     };
 
     const setPeriodFilter = (period) => {
@@ -110,19 +66,11 @@ function ListSells() {
         }
     };
 
-    const subtotalAmount = filteredSales.reduce((sum, sale) => sum + sale.total, 0);
-    const subtotalQuantity = filteredSales.reduce((sum, sale) => sum + sale.quantity, 0);
-
     return (
         <div>
             <HeaderChrono />
             <div className="container mx-auto p-4 mt-20">
                 <h1 className="text-2xl font-bold mb-4">Lista de Vendas</h1>
-                <button 
-                    onClick={handleModalToggle} 
-                    className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg mb-4 transition-colors duration-200">
-                    Criar Nova Venda
-                </button>
                 {/* Filtros */}
                 <div className="flex gap-4 mb-4">
                     <div>
@@ -170,8 +118,8 @@ function ListSells() {
                             className="p-2 border border-gray-300 rounded"
                         >
                             <option value="">Todos</option>
-                            {[...new Set(sales.map(sale => sale.product.name))].map((product, index) => (
-                                <option key={index} value={product}>{product}</option>
+                            {[...new Set(data.products?.map(item => item))].map((product) => (
+                                <option key={product.id} value={product.id}>{product.name}</option>
                             ))}
                         </select>
                     </div>
@@ -182,8 +130,8 @@ function ListSells() {
                             className="p-2 border border-gray-300 rounded"
                         >
                             <option value="">Todas</option>
-                            {[...new Set(sales.map(sale => sale.gym.name))].map((gym, index) => (
-                                <option key={index} value={gym}>{gym}</option>
+                            {[...new Set(data.gyms?.map(item => item))].map((gym) => (
+                                <option key={gym.id} value={gym.id}>{gym.name}</option>
                             ))}
                         </select>
                     </div>
@@ -193,52 +141,32 @@ function ListSells() {
                     <table className="min-w-full bg-white border border-gray-200">
                         <thead>
                             <tr>
-                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Data</th>
                                 <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Produto</th>
-                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Academia</th>
-                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Vendedor</th>
                                 <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Quantidade</th>
                                 <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Total</th>
-                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Tipo de Pagamento</th>
-                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Ação</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredSales.map((sale) => (
-                                <tr key={sale.id} className="hover:bg-gray-100 transition-colors">
-                                    <td className="py-2 px-4 border-b">{new Date(sale.date).toLocaleDateString('pt-BR')}</td>
+                            {filteredSales?.map((sale) => (
+                                <tr key={sale.item_id} className="hover:bg-gray-100 transition-colors">
                                     <td className="py-2 px-4 border-b">
                                         <div className="flex items-center gap-2">
-                                            <img 
-                                                src={sale.product.imageUrl} 
-                                                alt={sale.product.name} 
-                                                className="w-12 h-12 object-cover rounded"
+                                            <Image 
+                                                src={sale.imageUrl} 
+                                                alt={sale.name} 
+                                                width={48}
+                                                height={48}
+                                                className="object-cover rounded"
                                             />
                                             <div>
-                                                <p className="font-semibold">{sale.product.name}</p>
-                                                <p className="text-sm text-gray-500">Preço Unitário: R$ {sale.product.price.toFixed(2)}</p>
+                                                <p className="font-semibold">{sale.name}</p>
+                                                <p className="text-sm text-gray-500">Total do produto: R$ {sale.total.toFixed(2)}</p>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="py-2 px-4 border-b">{sale.gym.name}</td>
-                                    <td className="py-2 px-4 border-b">
-                                        <p>{sale.user.name}</p>
-                                        <p className="text-sm text-gray-500">{sale.user.role}</p>
-                                    </td>
                                     <td className="py-2 px-4 border-b">{sale.quantity}</td>
                                     <td className="py-2 px-4 border-b font-semibold">R$ {sale.total.toFixed(2)}</td>
-                                    <td className="py-2 px-4 border-b">{sale.paymentType}</td>
                                     <td className="py-2 px-4 border-b">
-                                        <button 
-                                            onClick={() => handleEditModalOpen(sale)} 
-                                            className="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-2 rounded">
-                                            <CiEdit />
-                                        </button>
-                                        <button 
-                                            onClick={() => handleDeleteModalOpen(sale)} 
-                                            className="bg-red-500 hover:bg-red-600 text-white py-1 px-2 ml-2 rounded">
-                                            <MdDelete />
-                                        </button>
                                     </td>
                                 </tr>
                             ))}
@@ -248,13 +176,13 @@ function ListSells() {
                 {/* Subtotal */}
                 <div className="mt-4">
                     <p className="text-lg font-bold">Subtotal</p>
-                    <p>Total Quantidade: {subtotalQuantity}</p>
-                    <p>Total Valor: R$ {subtotalAmount.toFixed(2)}</p>
+                    <p>Quantidade total: {data?.totalQuantity ?? 0}</p>
+                    <p>Valor bruto: R$ {data?.totalValue ? data.totalValue.toFixed(2) : Number().toFixed(2)}</p>
+                    <p>Comissão paga: R$ {data?.totalComission ? data.totalComission.toFixed(2) : Number().toFixed(2)}</p>
+                    <p>Valor líquido R$ {data?.subTotal ? data.subTotal.toFixed(2) : data.totalValue.toFixed(2)}</p>
                 </div>
             </div>
             {isModalOpen && <AddSaleModal onClose={handleModalToggle} onSaleAdded={fetchSales} />}
-            {isEditModalOpen && <EditSaleModal sale={selectedSale} onClose={handleEditModalClose} onSaleUpdated={fetchSales} />}
-            {isDeleteModalOpen && <ConfirmDeleteModal sale={saleToDelete} onClose={handleDeleteModalClose} onConfirm={handleDeleteConfirm} />}
         </div>
     );
 }

@@ -286,3 +286,15 @@ export const payTransaction = async (transactionId, gymId) => {
     throw error;
   }
 }
+
+export const getGroupedAdminTransactions = async (filters) => {
+  try {
+    const cleanedFilters = Object.fromEntries(Object.entries(filters).filter(([_, v]) => v != null && v !== ''));
+    const queryParameters = new URLSearchParams(cleanedFilters).toString();
+    const response = await api.get(`admin/transactions/grouped?${queryParameters}`);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar transações:', error);
+    throw error;
+  }
+}
