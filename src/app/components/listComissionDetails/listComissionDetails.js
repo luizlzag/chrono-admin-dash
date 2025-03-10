@@ -8,7 +8,6 @@ import Image from 'next/image';
 
 function ListComissionsDetails() {
     const [data, setData] = useState({ totalValue: 0, products: [], gyms: [], totalQuantity: 0, totalComission: 0 });
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [filteredSales, setFilteredSales] = useState([]);
     const [filterCriteria, setFilterCriteria] = useState({ startDate: null, endDate: null, gym: '', product: '' });
 
