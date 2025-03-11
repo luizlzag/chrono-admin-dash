@@ -4,6 +4,7 @@ import { getTransactionsAdmin } from "../../../axios/api";
 import HeaderChrono from "../header/header";
 import TransactionFilters from "./TransactionFilters";
 import TransactionTable from "./TransactionTable";
+import { MdArrowBack, MdArrowForward } from "react-icons/md";
 
 function TransactionList() {
     const [transactions, setTransactions] = useState([]);
@@ -47,6 +48,13 @@ function TransactionList() {
         setCurrentPage(1);
     };
 
+    const changeIndex = (index) => {
+        if (index < 1 || index > Math.ceil(filteredTransactions.length / itemsPerPage)) {
+            return;
+        }
+        setCurrentPage(index)
+    }
+
     const paginatedTransactions = filteredTransactions.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
     return (
@@ -62,6 +70,11 @@ function TransactionList() {
                     fetchTransactions={fetchTransactions}
                 />
                 <div className="flex justify-center mt-4">
+                    <button>
+                        <MdArrowBack
+                            onClick={() => changeIndex(currentPage - 1)}
+                            />
+                    </button>
                     {Array.from({ length: Math.ceil(filteredTransactions.length / itemsPerPage) }, (_, index) => (
                         <button 
                             key={index} 
@@ -71,6 +84,11 @@ function TransactionList() {
                             {index + 1}
                         </button>
                     ))}
+                    <button>
+                        <MdArrowForward
+                            onClick={() => changeIndex(currentPage + 1)}
+                            />
+                    </button>
                 </div>
             </div>
         </div>

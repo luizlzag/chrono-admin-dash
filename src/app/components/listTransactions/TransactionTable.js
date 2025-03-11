@@ -7,12 +7,12 @@ function TransactionTable({ transactions, expandedTransactionId, setExpandedTran
             <table className="min-w-full bg-white border border-gray-200 shadow-lg rounded-lg">
                 <thead>
                     <tr>
-                        <th className="py-2 px-4 border-b">Cliente</th>
-                        <th className="py-2 px-4 border-b">Academia</th>
-                        <th className="py-2 px-4 border-b">Valor</th>
-                        <th className="py-2 px-4 border-b">Status</th>
-                        <th className="py-2 px-4 border-b">Meio de pagamento</th>
-                        <th className="py-2 px-4 border-b">Ações</th>
+                        <th className="py-2 px-4 border-b text-left">Cliente</th>
+                        <th className="py-2 px-4 border-b text-left">Academia</th>
+                        <th className="py-2 px-4 border-b text-left">Valor</th>
+                        <th className="py-2 px-4 border-b text-left">Status</th>
+                        <th className="py-2 px-4 border-b text-left">Meio de pagamento</th>
+                        <th className="py-2 px-4 border-b text-left">Ações</th>
                     </tr>
                 </thead>
                 <tbody>

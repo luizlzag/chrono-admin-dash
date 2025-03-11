@@ -2,25 +2,25 @@ import React from "react";
 import Image from "next/image";
 import statusDictionary from "./statusDictionary";
 import paymentMethodDictionary from "./paymentMethodsDictionary";
-import { updateTransaction, payTransaction } from "@/axios/api";
+import { payTransaction, payTransactionComission } from "@/axios/api";
 
 function TransactionRow({ transaction, expanded, setExpandedTransactionId, fetchTransactions  }) {
     const toggleExpand = () => {
         setExpandedTransactionId(expanded ? null : transaction.id);
     };
 
-    const handleUpdateStatus = async (status) => {
-        try {
-            await updateTransaction(transaction.id, { status });
-            fetchTransactions();
-        } catch (error) {
-            alert("Erro ao atualizar a transação!" + error);
-        }
-    };
-
     const handlePayTransaction = async (id, gymId) => {
         try {
             await payTransaction(id, gymId);
+            fetchTransactions();
+        } catch (error) {
+            alert("Erro ao pagar a transação!" + error);
+        }
+    }
+
+    const handlePayTransactionComission = async (id, gymId) => {
+        try {
+            await payTransactionComission(id, gymId);
             fetchTransactions();
         } catch (error) {
             alert("Erro ao pagar a transação!" + error);
@@ -46,7 +46,7 @@ function TransactionRow({ transaction, expanded, setExpandedTransactionId, fetch
                     )}
                     {transaction.status === "paid" && (
                         <button 
-                            onClick={() => handleUpdateStatus("comission_paid")}
+                            onClick={() => handlePayTransactionComission(transaction.id, transaction.gym.id)}
                             className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
                         >
                             Pagar comissão
