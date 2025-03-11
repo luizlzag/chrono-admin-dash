@@ -257,7 +257,7 @@ export const deleteSale = async (saleId) => {
 
 export const getTransactionsAdmin = async () => {
   try {
-    const response = await api.get('/transaction/admin');
+    const response = await api.get('admin/transactions');
     return response.data;
   } catch (error) {
     console.error('Erro ao buscar transações:', error);
@@ -277,7 +277,7 @@ export const updateTransaction = async (transactionId, updatedData) => {
 
 export const payTransaction = async (transactionId, gymId) => {
   try {
-    const response = await api.post(`/transaction/pay/${transactionId}`, {
+    const response = await api.post(`/admin/transaction/pay/${transactionId}`, {
       gymId
     });
     return response.data;
@@ -291,10 +291,22 @@ export const getGroupedAdminTransactions = async (filters) => {
   try {
     const cleanedFilters = Object.fromEntries(Object.entries(filters).filter(([_, v]) => v != null && v !== ''));
     const queryParameters = new URLSearchParams(cleanedFilters).toString();
-    const response = await api.get(`admin/transactions/grouped?${queryParameters}`);
+    const response = await api.get(`/admin/transactions/grouped?${queryParameters}`);
     return response.data;
   } catch (error) {
     console.error('Erro ao buscar transações:', error);
+    throw error;
+  }
+}
+
+export const payTransactionComission = async (transactionId, gymId) => {
+  try {
+    const response = await api.post(`/admin/transaction/comission/pay/${transactionId}`, {
+      gymId
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Erro ao pagar a comissão da transação com ID ${transactionId}:`, error);
     throw error;
   }
 }
