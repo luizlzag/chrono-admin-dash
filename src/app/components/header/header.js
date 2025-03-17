@@ -31,6 +31,10 @@ function HeaderChrono() {
                 <Link href="/pages/ComissionDetails">
                     <p className="hover:text-gray-300">Detalhes de comissões</p>
                 </Link>
+
+                <Link href="/pages/StockConfirmation">
+                    <p className="hover:text-gray-300">Confirmações de estoque</p>
+                </Link>
             </div>
         </div>
     );
