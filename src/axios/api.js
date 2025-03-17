@@ -321,9 +321,19 @@ export const getStockConfirmations = async () => {
   }
 }
 
-export const strikeGym = async (gymId) => {
+export const invalidateConfirmation = async (id) => {
   try {
-    const response = await api.post(`admin/strike-gym/${gymId}`);
+    const response = await api.post(`admin/confirmation/invalid/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error('Erro ao buscar transações:', error);
+    throw error;
+  }
+}
+
+export const validateonfirmation = async (id) => {
+  try {
+    const response = await api.post(`admin/confirmation/valid/${id}`);
     return response.data;
   } catch (error) {
     console.error('Erro ao buscar transações:', error);
@@ -333,7 +343,7 @@ export const strikeGym = async (gymId) => {
 
 export const unblockGym = async (gymId) => {
   try {
-    const response = await api.post(`admin/strike-gym/${gymId}`);
+    const response = await api.post(`admin/unblock-gym/${gymId}`);
     return response.data;
   } catch (error) {
     console.error('Erro ao buscar transações:', error);
