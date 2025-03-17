@@ -1,11 +1,10 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
-import axios from "axios";
 import HeaderChrono from "../header/header";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdCheck, MdBlock, MdSyncLock } from "react-icons/md";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
-import { getStockConfirmations, strikeGym } from "@/axios/api";
+import { getStockConfirmations, validateonfirmation, invalidateConfirmation } from "@/axios/api";
 import { Pagination, Select, DatePicker } from "antd";
 
 const { RangePicker } = DatePicker;
@@ -62,8 +61,13 @@ function StockConfirmationList() {
         setExpandedId(expandedId === id ? null : id);
     };
 
-    const invalidateConfirmation = async (id) => {
-        await strikeGym(id)
+    const invalidateConfirmationClick = async (id) => {
+        await invalidateConfirmation(id)
+        setFetched(false);
+    };
+
+    const validateConfirmationClick = async (id) => {
+        await validateonfirmation(id)
         setFetched(false);
     };
 
@@ -75,6 +79,32 @@ function StockConfirmationList() {
         (currentPage - 1) * pageSize,
         currentPage * pageSize
     );
+
+    const getStatusClass = (status) => {
+        switch (status) {
+            case 'Aguardando validação':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'Válido':
+                return 'bg-green-100 text-green-800';
+            case 'Inválido':
+                return 'bg-red-100 text-red-800';
+            default:
+                return '';
+        }
+    };
+    
+    const getStatusIcon = (status) => {
+        switch (status) {
+            case 'Aguardando validação':
+                return <MdSyncLock className="inline-block mr-1" />;
+            case 'Válido':
+                return <MdCheck className="inline-block mr-1" />;
+            case 'Inválido':
+                return <MdBlock className="inline-block mr-1" />;
+            default:
+                return null;
+        }
+    };
 
     return (
         <>
@@ -109,6 +139,9 @@ function StockConfirmationList() {
                                     <p className="text-sm text-gray-500">
                                         {new Date(confirmation.createdAt).toLocaleDateString("pt-BR")}
                                     </p>
+                                    <p className={`text-sm px-2 py-1 rounded ${getStatusClass(confirmation.status)}`}>
+                                        {getStatusIcon(confirmation.status)} {confirmation.status}
+                                    </p>
                                 </div>
                                 {expandedId === confirmation.id ? <IoIosArrowUp /> : <IoIosArrowDown />}
                             </div>
@@ -134,10 +167,16 @@ function StockConfirmationList() {
                                         ))}
                                     </ul>
                                     <button
-                                        onClick={() => invalidateConfirmation(confirmation.gymId)}
+                                        onClick={() => invalidateConfirmationClick(confirmation.id)}
                                         className="mt-4 bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded flex items-center gap-2"
                                     >
                                         <MdDelete /> Invalidar Confirmação
+                                    </button>
+                                    <button
+                                        onClick={() => validateConfirmationClick(confirmation.id)}
+                                        className="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded flex items-center gap-2"
+                                    >
+                                        <MdCheck /> Validar Confirmação
                                     </button>
                                 </div>
                             )}
