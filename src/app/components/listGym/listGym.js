@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { getAllGysm } from '../../../axios/api';
+import { getAllGysm, unblockGym } from '../../../axios/api';
+import { MdLockOpen } from "react-icons/md";
 import HeaderChrono from '../header/header';
 import AddGymModal from './AddGymModal';
 import AddUserModal from './AddUserModal';
@@ -11,13 +12,13 @@ function ListGym() {
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
 
     const fetchGyms = async () => {
-        try {
-            const response = await getAllGysm();
-            setGyms(response.gyms);
-        } catch (error) {
-            console.error('Erro ao buscar academias:', error);
-        }
+        const response = await getAllGysm();
+        setGyms(response.gyms);
     };
+
+    const unblockGymClick = async (gymId) => {
+        await unblockGym(gymId);
+    }
 
     useEffect(() => {
         fetchGyms();
@@ -55,6 +56,8 @@ function ListGym() {
                                 <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Nome da Academia</th>
                                 <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Endereço</th>
                                 <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Usuários</th>
+                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Status</th>
+                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -81,6 +84,19 @@ function ListGym() {
                                         ) : (
                                             <p>Sem usuários cadastrados</p>
                                         )}
+                                    </td>
+                                    <td className="py-2 px-4 border-b">
+                                        {gym.blocked ? (<p>Bloqueado</p>) : (<p>Ativo</p>)}
+                                    </td>
+                                    <td className="py-2 px-4 border-b cursor-pointer">
+                                        <button
+                                            type="button"
+                                            name="UnblockUser"
+                                            className='bg-green-500 p-2 rounded-md flex items-center justify-center w-8 h-8'
+                                            onClick={() => unblockGymClick(gym.id)}
+                                        >
+                                            <MdLockOpen className='text-white' />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}

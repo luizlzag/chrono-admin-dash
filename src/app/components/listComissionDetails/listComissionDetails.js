@@ -64,7 +64,7 @@ function ListComissionsDetails() {
         <div>
             <HeaderChrono />
             <div className="container mx-auto p-4 mt-20">
-                <h1 className="text-2xl font-bold mb-4">Lista de Vendas</h1>
+                <h1 className="text-2xl font-bold mb-4">Detalhes de Comissões</h1>
                 {/* Filtros */}
                 <div className="flex gap-4 mb-4">
                     <div>
