@@ -82,8 +82,10 @@ function StockConfirmationList() {
 
     const getStatusClass = (status) => {
         switch (status) {
-            case 'Aguardando validação':
+            case 'Pendente':
                 return 'bg-yellow-100 text-yellow-800';
+            case 'Aguardando validação':
+                return 'bg-yellow-200 text-yellow-900';
             case 'Válido':
                 return 'bg-green-100 text-green-800';
             case 'Inválido':
@@ -95,6 +97,8 @@ function StockConfirmationList() {
     
     const getStatusIcon = (status) => {
         switch (status) {
+            case 'Pendente':
+                return <MdSyncLock className="inline-block mr-1" />;
             case 'Aguardando validação':
                 return <MdSyncLock className="inline-block mr-1" />;
             case 'Válido':
