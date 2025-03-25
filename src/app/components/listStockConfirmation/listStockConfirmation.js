@@ -83,7 +83,7 @@ function StockConfirmationList() {
     const getStatusClass = (status) => {
         switch (status) {
             case 'Pendente':
-                return 'bg-yellow-100 text-yellow-800';
+                return 'bg-orange-100 text-orange-800';
             case 'Aguardando validação':
                 return 'bg-yellow-200 text-yellow-900';
             case 'Válido':
@@ -139,9 +139,11 @@ function StockConfirmationList() {
                             >
                                 <div>
                                     <p className="font-semibold text-lg">{confirmation.gym.name}</p>
-                                    <p className="text-sm text-gray-500">Confirmado por: {confirmation.user.name} ({confirmation.user.role})</p>
+                                    {confirmation.status !== "Pendente" && (
+                                        <p className="text-sm text-gray-500">Confirmado por: {confirmation.user.name} ({confirmation.user.role})</p>
+                                    )}
                                     <p className="text-sm text-gray-500">
-                                        {new Date(confirmation.createdAt).toLocaleDateString("pt-BR")}
+                                        Data de solicitação: {new Date(confirmation.createdAt).toLocaleDateString("pt-BR")}
                                     </p>
                                     <p className={`text-sm px-2 py-1 rounded ${getStatusClass(confirmation.status)}`}>
                                         {getStatusIcon(confirmation.status)} {confirmation.status}
