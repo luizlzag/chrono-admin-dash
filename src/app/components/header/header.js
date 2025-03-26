@@ -1,11 +1,10 @@
-import React from 'react';
-import Link from 'next/link';
+import React from 'react'
+import Link from 'next/link'
 
 function HeaderChrono() {
-    return (  
-        <div className="fixed top-0 left-0 right-0 w-full bg-black z-10">  
+    return (
+        <div className="fixed top-0 left-0 right-0 w-full bg-black z-10">
             <div className="flex items-center gap-5 text-white my-3 mx-3 cursor-pointer">
-               
                 <Link href="/pages/Home">
                     <p className="hover:text-gray-300">Produtos</p>
                 </Link>
@@ -29,11 +28,13 @@ function HeaderChrono() {
                 </Link>
 
                 <Link href="/pages/StockConfirmation">
-                    <p className="hover:text-gray-300">Confirmações de estoque</p>
+                    <p className="hover:text-gray-300">
+                        Confirmações de estoque
+                    </p>
                 </Link>
             </div>
         </div>
-    );
+    )
 }
 
-export default HeaderChrono;
+export default HeaderChrono

@@ -1,12 +1,8 @@
-import React from 'react';
-import StockConfirmationList from '@/app/components/listStockConfirmation/listStockConfirmation';
+import React from 'react'
+import StockConfirmationList from '@/app/components/listStockConfirmation/listStockConfirmation'
 
 function PageStockConfirmation() {
-    return ( 
-        <>
-            <StockConfirmationList/>
-        </>
-    );
+    return <StockConfirmationList />
 }
 
-export default PageStockConfirmation;
+export default PageStockConfirmation

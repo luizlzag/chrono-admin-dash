@@ -1,12 +1,8 @@
-import TransactionList from '@/app/components/listTransactions/TransactionList';
-import React from 'react';
+import TransactionList from '@/app/components/listTransactions/TransactionList'
+import React from 'react'
 
 function PageTransaction() {
-    return ( 
-        <>
-            <TransactionList/>
-        </>
-    );
+    return <TransactionList />
 }
 
-export default PageTransaction;
+export default PageTransaction
