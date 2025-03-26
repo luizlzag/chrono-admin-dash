@@ -1,9 +1,8 @@
-import ListCadastro from '@/app/components/listCadastro/listCadastro';
-import React from 'react';
+import ListCadastro from '@/app/components/listCadastro/listCadastro'
+import React from 'react'
+
 function Home() {
-    return ( 
-        <ListCadastro/>
-     );
+    return <ListCadastro />
 }
 
-export default Home;
+export default Home

@@ -1,40 +1,43 @@
-"use client";
-import React, { useState, useEffect } from 'react';
-import { getAllComissions } from '../../../axios/api';
-import HeaderChrono from '../header/header';
+'use client'
+import React, { useState, useEffect } from 'react'
+import { getAllComissions } from '../../../axios/api'
+import HeaderChrono from '../header/header'
 
 function ListComission() {
-    const [commissions, setCommissions] = useState([]);
-    const [users, setUsers] = useState({});
+    const [commissions, setCommissions] = useState([])
+    const [users, setUsers] = useState({})
 
     // Busca comissões e mapeia usuários
     const fetchCommissions = async () => {
         try {
-            const commissionData = await getAllComissions();
-            setCommissions(commissionData.commissions);
-            
+            const commissionData = await getAllComissions()
+            setCommissions(commissionData.commissions)
+
             // Mapeia usuários únicos dos dados de comissões
-            const uniqueUserIds = [...new Set(commissionData.commissions.map(c => c.userId))];
+            const uniqueUserIds = [
+                ...new Set(commissionData.commissions.map((c) => c.userId))
+            ]
 
             // Opcional: Faça uma requisição para buscar os nomes dos usuários
             // Aqui assumimos que `getUserById` é uma função que retorna o nome do usuário dado um ID
-            const userData = {}; 
-            await Promise.all(uniqueUserIds.map(async (userId) => {
-                // Aqui está o exemplo básico com um nome fictício.
-                // No caso real, substituir por uma função que busca o usuário
-                userData[userId] = `Usuário ${userId}`; // Substitua para buscar o nome real
-            }));
+            const userData = {}
+            await Promise.all(
+                uniqueUserIds.map(async (userId) => {
+                    // Aqui está o exemplo básico com um nome fictício.
+                    // No caso real, substituir por uma função que busca o usuário
+                    userData[userId] = `Usuário ${userId}` // Substitua para buscar o nome real
+                })
+            )
 
-            setUsers(userData);
-
+            setUsers(userData)
         } catch (error) {
-            console.error('Erro ao buscar comissões:', error);
+            console.error('Erro ao buscar comissões:', error)
         }
-    };
+    }
 
     useEffect(() => {
-        fetchCommissions();
-    }, []);
+        fetchCommissions()
+    }, [])
 
     return (
         <div>
@@ -45,17 +48,29 @@ function ListComission() {
                     <table className="min-w-full bg-white border border-gray-200">
                         <thead>
                             <tr>
-                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Usuário</th>
-                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Valor</th>
-                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Tipo</th>
-                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">Descrição</th>
+                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">
+                                    Usuário
+                                </th>
+                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">
+                                    Valor
+                                </th>
+                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">
+                                    Tipo
+                                </th>
+                                <th className="py-2 px-4 border-b text-left font-semibold text-gray-700">
+                                    Descrição
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {commissions.map((commission) => (
-                                <tr key={commission.id} className="hover:bg-gray-100 transition-colors">
+                                <tr
+                                    key={commission.id}
+                                    className="hover:bg-gray-100 transition-colors"
+                                >
                                     <td className="py-2 px-4 border-b">
-                                        {users[commission.userId] || 'Carregando...'}
+                                        {users[commission.userId] ||
+                                            'Carregando...'}
                                     </td>
                                     <td className="py-2 px-4 border-b font-semibold">
                                         R$ {commission.amount.toFixed(2)}
@@ -63,7 +78,9 @@ function ListComission() {
                                     <td className="py-2 px-4 border-b capitalize">
                                         {commission.type}
                                     </td>
-                                    <td className="py-2 px-4 border-b">{commission.description}</td>
+                                    <td className="py-2 px-4 border-b">
+                                        {commission.description}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -71,7 +88,7 @@ function ListComission() {
                 </div>
             </div>
         </div>
-    );
+    )
 }
 
-export default ListComission;
+export default ListComission
